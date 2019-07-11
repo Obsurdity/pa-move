@@ -1,0 +1,48 @@
+#!/bin/bash
+
+# Program to make it easier to move around pulseaudio inputs to desired sinks
+# Author: Graham M Mendez
+# Site: https://github.com/Obsurdity
+# Created: 2019-07-11
+
+# Define number of sinks available
+lens=$(pactl list short sinks | wc -l)
+# Define number of inputs
+leni=$(pactl list short sink-inputs | wc -l)
+# Set counter
+count=1
+
+# Print column headers for inputs
+printf "%s\n\t%-10s%-15s%-15s%s\n" "Inputs:" "source:" "title:" "current sink:" "paused:"
+# Iterate through each input's information and print 
+while [ $count -le $leni ]
+do
+    inp=`((pactl list sink-inputs | grep "Sink Input")| awk '{print $3}')| awk -v c=$count 'NR==c'`
+    src=`((pactl list sink-inputs | grep "application.process.binary")|
+	 awk '{print $3}')| awk -v c=$count 'NR==c'`
+    cur=`((pactl list sink-inputs | grep "Sink:")| awk '{print $2}')| awk -v c=$count 'NR==c'`
+    pau=`((pactl list sink-inputs | grep "Corked:")| awk '{print $2}')| awk -v c=$count 'NR==c'`
+    printf "\t%-10s%-15s%-15s%-15s\n" "$inp" "$src" "#$cur" "$pau"
+    ((count++))
+done
+
+# Reser counter
+count=1
+
+# Print column headers for sinks
+printf "%s\n\t%-10s%s\n" "Sinks:" "inputs:" "name:" 
+# Iterate through each sinks information and print
+while [ $count -le $lens ]
+do
+    sin=`((pactl list sinks | grep Sink)| awk  '{print $2}')|awk -v c=$count 'NR==c'`
+    nam=`((pactl list sinks | grep Description)| awk '{print $2" "$3}')| awk -v c=$count 'NR==c'`
+    printf "\t%-10s%-20s\n" "$sin" "$nam"
+    ((count++))
+done
+
+# Ask for user input
+printf "What do? <input><sink>\n"
+# Take input
+read move
+# Do the thing
+pactl move-sink-input $move
