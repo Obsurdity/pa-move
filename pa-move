@@ -43,6 +43,6 @@ done
 # Ask for user input
 printf "What do? <input><sink>\n"
 # Take input
-read move
+read fart shit
 # Do the thing
-pactl move-sink-input $move
+pactl move-sink-input $fart #shit
